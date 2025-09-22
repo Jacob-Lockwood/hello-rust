@@ -1,25 +1,38 @@
-use ferris_says::say; // from the previous step
-use std::io::{self, stdin, stdout, BufWriter, BufRead};
-mod test_mod;
+use std::io::stdin;
 
-fn main() -> io::Result<()> {
-    let stdout = stdout();
-    let message = String::from("Hello fellow Rustaceans!");
-    let width = message.chars().count();
+fn parse_num(source: &mut String) -> i32 {
+    let mut n = 0;
+    while source.len() > 0 && "0123456789".contains(source.chars().nth(0).unwrap()) {
+        n = 10 * n + "0123456789".find(source.remove(0)).unwrap();
+    }
+    return n as i32;
+}
 
-    let mut writer = BufWriter::new(stdout.lock());
-    say(&message, width, &mut writer).unwrap();
-
-    let sum = test_mod::add(4, 8);
-    let sumstr = i32::to_string(&sum);
-    let sumwidth = sumstr.chars().count();
-    say(&sumstr, sumwidth, &mut writer).unwrap();
-
-    let mut buffer = String::new();
+fn exec(source: &mut String) -> i32 {
+    let x = parse_num(source);
+    let op = source.remove(0);
+    let y = parse_num(source);
+    return match op {
+        '+' => x + y,
+        '-' => x - y,
+        '*' => x * y,
+        _ => y,
+    };
+}
+fn main() {
     let stdin = stdin();
-    let mut handle = stdin.lock();
-    handle.read_line(&mut buffer)?;
-    let inwidth = buffer.chars().count();
-    say(&buffer, inwidth, &mut writer).unwrap();
-    Ok(())
+    println!(
+        "welcome!\nenter expressions of the form xFy where x and y are integers,\nx defaults to zero, and F is one of +, -, *.\nenter nothing to quit"
+    );
+    loop {
+        let mut input = String::from("");
+        stdin.read_line(&mut input).unwrap();
+        input = input.trim_end().to_string();
+        if input == "" {
+            break;
+        }
+        let value = exec(&mut input);
+        println!("{}", value);
+    }
+    println!("goodbye!");
 }
